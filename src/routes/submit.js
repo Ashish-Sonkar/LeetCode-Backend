@@ -1,8 +1,9 @@
 const express=require("express")
 const userMiddleware = require("../middleware/userMiddleware")
 const submitRouter=express.Router()
-const submitCode=require("../controllers/userSubmission.js")
+const {submitCode,runCode}=require("../controllers/userSubmission.js")
 
 submitRouter.post("/submitCode/:id",userMiddleware,submitCode)
+submitRouter.post("/runCode/:id",userMiddleware,runCode)
 
 module.exports=submitRouter

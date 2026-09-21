@@ -4,12 +4,12 @@ const {Schema}=mongoose
 const submissionSchema=new Schema({
     userId:{
         type:Schema.Types.ObjectId,
-        ref:"User",
+        ref:"user",
         required:true
     },
     problemId:{
         type:Schema.Types.ObjectId,
-        ref:"Problem",
+        ref:"problem",
         required:true
     },
     code:{
@@ -49,6 +49,8 @@ const submissionSchema=new Schema({
 },{
     timestamps:true
 })
+
+submissionSchema.index({userId:1,problemId:1})
 
 const Submission=mongoose.model('submission',submissionSchema)
 

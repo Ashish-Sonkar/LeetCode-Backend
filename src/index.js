@@ -38,13 +38,3 @@ const InitializeConnection=async()=>{
 
 InitializeConnection()
 
-
-
-// main()
-//     .then(async () => {
-//         console.log("Database connected")
-//         app.listen(process.env.PORT, () => {
-//             console.log(`Server is running at port number ${process.env.PORT}`)
-//         })
-//     })
-//     .catch((err)=>console.log("Error:"+err.message))

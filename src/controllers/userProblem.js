@@ -1,5 +1,7 @@
 const { getLanguageById, submitBatch, submitToken } = require("../utils/problemUtility.js")
 const Problem = require("../models/problem.js")
+const User = require("../models/user.js")
+const Submission = require("../models/submission.js")
 
 const createProblem = async (req, res) => {
     const { title, description, difficulty, tags, visibleTestCases, hiddenTestCases, startCode, referenceSolution, problemCreator } = req.body
@@ -182,4 +184,43 @@ const getAllProblem=async (req,res)=>{
     }
 }
 
-module.exports = { createProblem, updateProblem, deleteProblem, getProblemById,getAllProblem }
+const solvedAllProblemByUser=async (req,res)=>{
+
+    try{
+
+        const userId=req.result._id
+        const user=await User.findById(userId).populate({
+            path:"problemSolved",
+            select:"_id title difficulty tags"
+        })
+        res.status(200).send(user.problemSolved)
+
+    }
+    catch(err){
+        res.status(500).send("Server Problem")
+    }
+
+}
+
+const submittedProblem=async (req,res)=>{
+
+    try{
+
+        const userId=req.result._id
+        const problemId=req.params.problemId
+
+        const ans=await Submission.find({userId,problemId})
+        
+        if(ans.length==0){
+            res.status(200).send("No Submission is present")
+        }
+
+        res.status(200).send(ans)
+
+    }catch(err){
+        res.status(500).send("Internal Server Error")
+    }
+
+}
+
+module.exports = { createProblem, updateProblem, deleteProblem, getProblemById,getAllProblem,solvedAllProblemByUser,submittedProblem }
