@@ -23,7 +23,16 @@ const register=async (req,res)=>{
         const token=jwt.sign({_id:user._id,emailId:emailId,role:"user"},process.env.JWT_KEY,{expiresIn:"2 days"})
         res.cookie("token",token,{maxAge:2 * 24 * 60 * 60 * 1000})
 
-        res.status(201).send("User Registered Successfully")
+        const reply={
+            firstName:user.firstName,
+            emailId:user.emailId,
+            _id:user._id
+        }
+
+        res.status(200).json({
+            user:reply,
+            message:"Register Successfully"
+        })
 
     }
     catch(err){
@@ -87,7 +96,16 @@ const login=async (req,res)=>{
         const token=jwt.sign({_id:user._id,emailId:emailId,role:user.role},process.env.JWT_KEY,{expiresIn:"2 days"})
         res.cookie("token",token,{maxAge:2 * 24 * 60 * 60 * 1000})
 
-        res.status(200).send("Login Successfully")
+        const reply={
+            firstName:user.firstName,
+            emailId:user.emailId,
+            _id:user._id
+        }
+
+        res.status(201).json({
+            user:reply,
+            message:"Login Successfully"
+        })
 
     }catch(err){
         res.status(401).send("Error"+err.message)
