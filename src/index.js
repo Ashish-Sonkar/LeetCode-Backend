@@ -7,8 +7,12 @@ const authRouter=require("./routes/userAuth.js")
 const redisClient = require("./config/redis.js")
 const problemRouter=require("./routes/problemCreator.js")
 const submitRouter=require("./routes/submit.js")
+const cors=require("cors")
 
-
+app.use(cors({
+    origin:"http://localhost:5173",
+    credentials:true
+}))
 
 app.use(express.json())
 app.use(cookieParser())
