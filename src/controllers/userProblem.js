@@ -151,7 +151,7 @@ const getProblemById = async (req, res) => {
             return res.status(400).send("ID is Missing")
         }
 
-        const getProblem=await Problem.findById(id).select('_id title description difficulty tags visibleTestCases referenceSolution')
+        const getProblem=await Problem.findById(id).select('_id title description difficulty tags visibleTestCases referenceSolution startCode')
 
         if(!getProblem){
             return res.status(404).send("Problem is Missing")
@@ -207,12 +207,12 @@ const submittedProblem=async (req,res)=>{
     try{
 
         const userId=req.result._id
-        const problemId=req.params.problemId
+        const problemId=req.params.id
 
         const ans=await Submission.find({userId,problemId})
         
         if(ans.length==0){
-            res.status(200).send("No Submission is present")
+            return res.status(200).send([])
         }
 
         res.status(200).send(ans)
