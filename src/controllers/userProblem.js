@@ -2,6 +2,7 @@ const { getLanguageById, submitBatch, submitToken } = require("../utils/problemU
 const Problem = require("../models/problem.js")
 const User = require("../models/user.js")
 const Submission = require("../models/submission.js")
+const SolutionVideo=require("../models/solutionVideo.js")
 
 const createProblem = async (req, res) => {
     const { title, description, difficulty, tags, visibleTestCases, hiddenTestCases, startCode, referenceSolution, problemCreator } = req.body
@@ -155,6 +156,16 @@ const getProblemById = async (req, res) => {
 
         if(!getProblem){
             return res.status(404).send("Problem is Missing")
+        }
+
+        const videos=await SolutionVideo.find({problemId:id})
+
+        if(videos){
+            getProblem.secureUrl=secureUrl
+            getProblem.cloudinaryPublicId=cloudinaryPublicId
+            getProblem.thumbnailUrl=thumbnailUrl
+            getProblem.duration=duration
+            return res.status(200).send(getProblem)
         }
 
         res.status(200).send(getProblem)

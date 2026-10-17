@@ -7,6 +7,8 @@ const authRouter=require("./routes/userAuth.js")
 const redisClient = require("./config/redis.js")
 const problemRouter=require("./routes/problemCreator.js")
 const submitRouter=require("./routes/submit.js")
+const aiRouter=require("./routes/aiChatting.js")
+const videoRouter=require("./routes/videoCreator.js")
 const cors=require("cors")
 
 app.use(cors({
@@ -20,6 +22,8 @@ app.use(cookieParser())
 app.use("/user",authRouter)
 app.use("/problem",problemRouter)
 app.use("/submission",submitRouter)
+app.use("/ai",aiRouter)
+app.use("/video",videoRouter)
 
 const InitializeConnection=async()=>{
     

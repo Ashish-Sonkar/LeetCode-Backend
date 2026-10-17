@@ -9,7 +9,7 @@ const submitCode = async (req, res) => {
         const userId = req.result._id
         const problemId = req.params.id
 
-        const { code, language } = req.body
+        let { code, language } = req.body
 
         if (!userId || !problemId || !code || !language) {
             return res.status(400).send("Some field missing")
@@ -111,11 +111,14 @@ const runCode = async (req, res) => {
         const userId = req.result._id
         const problemId = req.params.id
 
-        const { code, language } = req.body
+        let { code, language } = req.body
 
         if (!userId || !problemId || !code || !language) {
             return res.status(400).send("Some field missing")
         }
+
+        if(language==='cpp')
+            language='c++'
 
         //fetch the problem from database
         const problem = await Problem.findById(problemId)
