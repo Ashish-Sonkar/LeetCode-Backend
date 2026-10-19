@@ -91,9 +91,6 @@ Remember: Your goal is to help users learn and understand DSA concepts through t
                 },
             });
 
-            // response = response.trim()
-            // response = response.replace(/^```json\s*|```$/g, '').trim()
-
             res.status(201).json({
                 message: response.text
             })
@@ -103,9 +100,17 @@ Remember: Your goal is to help users learn and understand DSA concepts through t
         await main()
 
     } catch (err) {
-        res.status(500).json({
-            message: "Internal server error"
-        })
+        console.error("Gemini API Error:", err.message);
+
+        if (err.status === 429) {
+            return res.status(429).json({
+                message: "I'm unable to answer right now because the AI service has reached its request limit. Please try again later."
+            });
+        }
+
+        return res.status(500).json({
+            message: "Something went wrong with the AI chatbot."
+        });
     }
 
 }

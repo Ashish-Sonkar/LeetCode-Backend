@@ -2,7 +2,7 @@ const { getLanguageById, submitBatch, submitToken } = require("../utils/problemU
 const Problem = require("../models/problem.js")
 const User = require("../models/user.js")
 const Submission = require("../models/submission.js")
-const SolutionVideo=require("../models/solutionVideo.js")
+const SolutionVideo = require("../models/solutionVideo.js")
 
 const createProblem = async (req, res) => {
     const { title, description, difficulty, tags, visibleTestCases, hiddenTestCases, startCode, referenceSolution, problemCreator } = req.body
@@ -152,20 +152,24 @@ const getProblemById = async (req, res) => {
             return res.status(400).send("ID is Missing")
         }
 
-        const getProblem=await Problem.findById(id).select('_id title description difficulty tags visibleTestCases referenceSolution startCode')
+        const getProblem = await Problem.findById(id).select('_id title description difficulty tags visibleTestCases hiddenTestCases referenceSolution startCode')
 
-        if(!getProblem){
+        if (!getProblem) {
             return res.status(404).send("Problem is Missing")
         }
 
-        const videos=await SolutionVideo.findOne({problemId:id})
+        const videos = await SolutionVideo.findOne({ problemId: id })
 
-        if(videos){
-            getProblem.secureUrl=secureUrl
-            getProblem.cloudinaryPublicId=cloudinaryPublicId
-            getProblem.thumbnailUrl=thumbnailUrl
-            getProblem.duration=duration
-            return res.status(200).send(getProblem)
+        if (videos) {
+
+            const responseData = {
+                ...getProblem.toObject(),
+                secureUrl: videos.secureUrl,
+                thumbnailUrl: videos.thumbnailUrl,
+                duration: videos.duration
+            }
+
+            return res.status(200).send(responseData)
         }
 
         res.status(200).send(getProblem)
@@ -178,60 +182,60 @@ const getProblemById = async (req, res) => {
 
 }
 
-const getAllProblem=async (req,res)=>{
-    try{
+const getAllProblem = async (req, res) => {
+    try {
 
-        const getAllProblems=await Problem.find({}).select('_id title difficulty tags')
+        const getAllProblems = await Problem.find({}).select('_id title difficulty tags')
 
-        if(getAllProblems.length==0){
+        if (getAllProblems.length == 0) {
             return res.status(404).send("Problem is Missing")
         }
 
         res.status(200).send(getAllProblems)
 
     }
-    catch(err){
-        res.status(500).send("Error:"+err.message)
+    catch (err) {
+        res.status(500).send("Error:" + err.message)
     }
 }
 
-const solvedAllProblemByUser=async (req,res)=>{
+const solvedAllProblemByUser = async (req, res) => {
 
-    try{
+    try {
 
-        const userId=req.result._id
-        const user=await User.findById(userId).populate({
-            path:"problemSolved",
-            select:"_id title difficulty tags"
+        const userId = req.result._id
+        const user = await User.findById(userId).populate({
+            path: "problemSolved",
+            select: "_id title difficulty tags"
         })
         res.status(200).send(user.problemSolved)
 
     }
-    catch(err){
+    catch (err) {
         res.status(500).send("Server Problem")
     }
 
 }
 
-const submittedProblem=async (req,res)=>{
+const submittedProblem = async (req, res) => {
 
-    try{
+    try {
 
-        const userId=req.result._id
-        const problemId=req.params.id
+        const userId = req.result._id
+        const problemId = req.params.id
 
-        const ans=await Submission.find({userId,problemId})
-        
-        if(ans.length==0){
+        const ans = await Submission.find({ userId, problemId })
+
+        if (ans.length == 0) {
             return res.status(200).send([])
         }
 
         res.status(200).send(ans)
 
-    }catch(err){
+    } catch (err) {
         res.status(500).send("Internal Server Error")
     }
 
 }
 
-module.exports = { createProblem, updateProblem, deleteProblem, getProblemById,getAllProblem,solvedAllProblemByUser,submittedProblem }
+module.exports = { createProblem, updateProblem, deleteProblem, getProblemById, getAllProblem, solvedAllProblemByUser, submittedProblem }

@@ -1,12 +1,12 @@
 const cloudinary = require('cloudinary').v2;
-const Problem=require("../models/problem")
-const User=require("../models/user")
-const SolutionVideo=require("../models/solutionVideo")
+const Problem = require("../models/problem")
+const User = require("../models/user")
+const SolutionVideo = require("../models/solutionVideo")
 
 cloudinary.config({
-    cloud_name:process.env.CLOUDINARY_CLOUD_NAME,
-    api_key:process.env.CLOUDINARY_API_KEY,
-    api_secret:process.env.CLOUDINARY_API_SECRET
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
 })
 
 
@@ -14,7 +14,7 @@ const generateUploadSignature = async (req, res) => {
     try {
         const { problemId } = req.params;
 
-        const userId=req.result._id
+        const userId = req.result._id
 
         // Verify problem exists
         const problem = await Problem.findById(problemId);
@@ -44,7 +44,7 @@ const generateUploadSignature = async (req, res) => {
             public_id: publicId,
             api_key: process.env.CLOUDINARY_API_KEY,
             cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-            upload_url: `https://api.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/video/upload`,
+            upload_url: `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/video/upload`,
         });
 
     } catch (error) {
@@ -85,15 +85,17 @@ const saveVideoMetadata = async (req, res) => {
             return res.status(409).json({ error: 'Video already exists' });
         }
 
-        const thumbnailUrl = cloudinary.url(cloudinaryResource.public_id, {
-            resource_type: 'image',
-            transformation: [
-                { width: 400, height: 225, crop: 'fill' },
-                { quality: 'auto' },
-                { start_offset: 'auto' }
-            ],
-            format: 'jpg'
-        });
+        const thumbnailUrl = cloudinary.url(
+            cloudinaryResource.public_id,
+            {
+                resource_type: "video",
+                format: "jpg",
+                transformation: [
+                    { start_offset: "1" },
+                    { width: 400, height: 225, crop: "fill" }
+                ]
+            }
+        );
 
         // Create video solution record
         const videoSolution = new SolutionVideo({
@@ -128,7 +130,7 @@ const deleteVideo = async (req, res) => {
         const { problemId } = req.params;
         const userId = req.result._id;
 
-        const video = await SolutionVideo.findOneAndDelete({problemId:problemId});
+        const video = await SolutionVideo.findOneAndDelete({ problemId: problemId });
 
         if (!video) {
             return res.status(404).json({ error: 'Video not found' });
@@ -147,4 +149,4 @@ const deleteVideo = async (req, res) => {
     }
 };
 
-module.exports={generateUploadSignature,saveVideoMetadata,deleteVideo}
+module.exports = { generateUploadSignature, saveVideoMetadata, deleteVideo }
