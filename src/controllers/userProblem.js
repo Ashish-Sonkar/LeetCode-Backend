@@ -59,64 +59,74 @@ const createProblem = async (req, res) => {
 
 const updateProblem = async (req, res) => {
     const { id } = req.params;
-    const { title, description, difficulty, tags, visibleTestCases, hiddenTestCases, startCode, referenceSolution, problemCreator } = req.body
+    const { title, description, difficulty, tags, visibleTestCases, hiddenTestCases, startCode, referenceSolution, problemCreator } = req.body;
 
     try {
-
         if (!id) {
-            return res.status(400).send("Missing ID Field")
+            return res.status(400).send("Missing ID Field");
         }
 
-        const dsaProblem = await Problem.findById(id)
+        const dsaProblem = await Problem.findById(id);
 
         if (!dsaProblem) {
-            return res.status(404).send("ID is not present in Server")
+            return res.status(404).send("ID is not present in Server");
         }
 
+        if (!referenceSolution || !Array.isArray(referenceSolution) || referenceSolution.length === 0) {
+            return res.status(400).send("Reference solutions are required for validation.");
+        }
+
+        if (!visibleTestCases || !Array.isArray(visibleTestCases)) {
+            return res.status(400).send("Visible test cases are required.");
+        }
+
+        // Judge0 validation loop
         for (const { language, completeCode } of referenceSolution) {
+            const languageId = getLanguageById(language);
 
-            //source_code
-            //language_id
-            //stdin
-            //expectedOutput
-
-            const languageId = getLanguageById(language)
-
-            //creating batch submission
             const submissions = visibleTestCases.map((testcase) => ({
                 source_code: completeCode,
                 language_id: languageId,
                 stdin: testcase.input,
                 expected_output: testcase.output
+            }));
 
-            }))
+            // Judge0 API call Rate limit
+            const submitResult = await submitBatch(submissions);
 
-            const submitResult = await submitBatch(submissions)
+            if (!submitResult || !Array.isArray(submitResult)) {
+                return res.status(500).send("Error: Failed to communicate with code judge service (Rate limit or network issue).");
+            }
 
+            const resultToken = submitResult.map((value) => value.token);
+            const testResult = await submitToken(resultToken);
 
-            const resultToken = submitResult.map((value) => value.token)
-
-            const testResult = await submitToken(resultToken)
-
+            if (!testResult || !Array.isArray(testResult)) {
+                return res.status(500).send("Error: Failed to fetch test results from judge.");
+            }
 
             for (const test of testResult) {
                 if (test.status_id != 3) {
-                    return res.status(400).send("Error Occured")
+                    return res.status(400).send(`Test case failed for language ${language}. Output did not match.`);
                 }
             }
-
         }
 
-        const newProblem = await Problem.findByIdAndUpdate(id, { ...req.body }, { runValidators: true, new: true })
+        
+        const updatedProblem = await Problem.findByIdAndUpdate(
+            id, 
+            { ...req.body }, 
+            { runValidators: true, returnDocument: 'after' }
+        );
 
-        res.status(200).send("Update Successfully")
+        res.status(200).send("Update Successfully");
 
     }
     catch (err) {
-        res.status(500).send("Error:" + err.message)
+        console.error("Update Problem Error:", err); 
+        res.status(500).send("Error: " + err.message);
     }
-
-}
+};
 
 const deleteProblem = async (req, res) => {
 
